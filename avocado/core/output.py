@@ -17,6 +17,7 @@ Manages output and logging in avocado applications.
 """
 import errno
 import logging
+import logging.handlers
 import os
 import re
 import sys
@@ -428,7 +429,7 @@ def del_last_configuration():
 
 
 def split_loggers_and_levels(loggers):
-    """Separates logger names and legger levels.
+    """Separates logger names and logger levels.
 
     :param loggers: Logger names with or without levels
     :type loggers: List of strings in format STREAM[:LEVEL][,STREAM[:LEVEL][,...]]
@@ -666,6 +667,7 @@ def add_log_handler(
     level=logging.DEBUG,
     fmt="%(name)s: %(message)s",
     handler_filter=None,
+    buffer_size=0,
 ):
     """
     Add handler to a logger.
@@ -678,6 +680,9 @@ def add_log_handler(
     :param level: Log level (defaults to `INFO``)
     :param fmt: Logging format (defaults to ``%(name)s: %(message)s``)
     :param handler_filter: Logging filter class based on logging.Filter
+    :param buffer_size: whether to add a layer of memory based buffering with
+                        a given number of entries.  If <= 0, buffering is
+                        disabled.
     """
 
     def save_handler(logger_name, handler):
@@ -699,6 +704,11 @@ def add_log_handler(
     handler.setFormatter(fmt)
     if handler_filter:
         handler.addFilter(handler_filter)
+
+    if klass == logging.FileHandler and buffer_size > 0:
+        buffered_wrapper = logging.handlers.MemoryHandler(buffer_size)
+        buffered_wrapper.setTarget(handler)
+        handler = buffered_wrapper
 
     logger.addHandler(handler)
     save_handler(logger.name, handler)

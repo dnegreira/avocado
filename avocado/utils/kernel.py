@@ -23,7 +23,10 @@ import os
 import shutil
 import tempfile
 
-from pkg_resources import packaging
+try:
+    import packaging
+except ImportError:
+    from pkg_resources import packaging
 
 from avocado.utils import archive, asset, build, distro, process
 
