@@ -4,6 +4,7 @@ import unittest
 from avocado.utils import distro
 from avocado.utils.software_manager import backends, manager
 from selftests.utils import BASEDIR, setup_avocado_loggers
+from pudb.remote import set_trace
 
 setup_avocado_loggers()
 
@@ -13,12 +14,26 @@ def apt_supported_distro():
     return distro.detect().name in ["debian", "Ubuntu"]
 
 
+def login_binary_path(distro_name, distro_version):
+    if distro_name == "Ubuntu":
+        if float(distro_version) >= 24.04:
+            return "/usr/bin/login"
+    if distro_name == "debian":
+        if distro_version == "trixie":
+            return "/usr/bin/login"
+    return "/bin/login"
+
+
 @unittest.skipUnless(os.getuid() == 0, "This test requires root privileges")
 @unittest.skipUnless(apt_supported_distro(), "Unsupported distro")
 class Apt(unittest.TestCase):
     def test_provides(self):
         sm = manager.SoftwareManager()
-        self.assertEqual(sm.provides("/bin/login"), "login")
+        distro_name = distro.detect().name
+        distro_version = distro.detect().version
+        set_trace()
+        login_path = login_binary_path(distro_name, distro_version)
+        self.assertEqual(sm.provides(login_path), "login")
         self.assertTrue(isinstance(sm.backend, backends.apt.AptBackend))
 
 
