@@ -387,7 +387,23 @@ class DebianProbe(Probe):
 
     CHECK_FILE = "/etc/debian_version"
     CHECK_FILE_DISTRO_NAME = "debian"
-    CHECK_VERSION_REGEX = re.compile(r"((.+)/(.+)|(\d+.\d+))")
+
+    numeric_version_regex = r"(\d+)\.(\d+)"
+    string_version_regex = r"([a-z]+)/([a-z]+)"
+    num_re = re.compile(numeric_version_regex)
+    str_re = re.compile(string_version_regex)
+
+    version_file = open(CHECK_FILE, 'r')
+    version = version_file.readline()
+    version_file.close()
+
+    match = version.match(num_re)
+    if match:
+        CHECK_VERSION_REGEX = re.compile(num_re)
+
+    match = version.match(str_re)
+    if match:
+        CHECK_VERSION_REGEX = re.compile(num_re)
 
 
 class UbuntuProbe(Probe):
